@@ -300,7 +300,30 @@ Hope you enjoy using gen.py!
 """)
     print(f"Created example blog post in {markdown_dir}/blog/first-post.md")
     
-    print("Initialization complete!")
+    print("Sample files created successfully.")
+    
+    # Also build the HTML files
+    print("\nNow building HTML files from the sample markdown files...")
+    
+    # Create or recreate the build directory
+    if os.path.exists(build_dir):
+        print(f"Removing existing {build_dir} directory...")
+        shutil.rmtree(build_dir)
+    
+    print(f"Creating {build_dir} directory...")
+    os.makedirs(build_dir)
+    
+    # Collect and categorize files
+    all_files = collect_all_files(markdown_dir)
+    file_data = categorize_files(all_files, markdown_dir)
+    file_data['all_files'] = all_files
+    
+    # Process directories and build HTML files
+    process_directory(markdown_dir, build_dir, template_dir, file_data)
+    
+    print(f"Sample site built successfully in the {build_dir} directory!")
+    print(f"\nTo view your site, run: python -m http.server --directory {build_dir}")
+    print("Then open http://localhost:8000 in your browser.")
 
 def validate_frontmatter(metadata, filepath):
     """Validate that required frontmatter fields are present."""
@@ -460,7 +483,7 @@ def process_directory(src_dir, build_dir, template_dir, file_data):
 def main():
     # Set up command-line arguments
     parser = argparse.ArgumentParser(description='Generate HTML files from Markdown using Jinja2 templates')
-    parser.add_argument('--init', action='store_true', help='Initialize project with sample files')
+    parser.add_argument('--init', action='store_true', help='Initialize project with sample files and build the site')
     parser.add_argument('--markdown-dir', default='markdown', help='Directory containing markdown files (default: markdown)')
     parser.add_argument('--build-dir', default='build', help='Output directory for HTML files (default: build)')
     parser.add_argument('--template-dir', default='templates', help='Directory containing templates (default: templates)')
@@ -472,7 +495,7 @@ def main():
     build_dir = args.build_dir
     template_dir = args.template_dir
     
-    # If --init flag is set, initialize the project with sample files
+    # If --init flag is set, initialize the project with sample files and build the site
     if args.init:
         initialize_directories(markdown_dir, build_dir, template_dir)
         return
@@ -517,6 +540,8 @@ def main():
     
     if files_processed > 0:
         print(f"Conversion complete! {files_processed} files processed.")
+        print(f"\nTo view your site, run: python -m http.server --directory {build_dir}")
+        print("Then open http://localhost:8000 in your browser.")
     else:
         print(f"No markdown files found in {markdown_dir}. Please add .md files and run the script again.")
         print(f"You can run 'python gen.py --init' to create sample files.")
